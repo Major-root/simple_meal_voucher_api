@@ -30,7 +30,6 @@ exports.login = async (req) => {
   if (!isPasswordValid) {
     throw new AppError("Invalid  email or password", 401);
   }
-
-  const token = jwt.generateToken(user.userId);
+  const token = jwt.generateToken(user._id);
   return { user, token };
 };

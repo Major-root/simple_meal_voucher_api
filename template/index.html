@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voucher Management System</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qr-scanner/1.4.2/qr-scanner.umd.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary-color: #dc2626;
+        --primary-hover: #b91c1c;
+        --success-color: #10b981;
+        --error-color: #ef4444;
+        --warning-color: #f59e0b;
+        --text-dark: #1f2937;
+        --text-light: #6b7280;
+        --bg-light: #f9fafb;
+        --border-color: #e5e7eb;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        color: var(--text-dark);
+      }
+
+      /* Toast Notifications */
+      .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .toast {
+        background: white;
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 300px;
+        border-left: 4px solid;
+        transform: translateX(400px);
+        opacity: 0;
+        animation: slideIn 0.3s ease-out forwards;
+      }
+
+      .toast.success {
+        border-left-color: var(--success-color);
+        color: var(--success-color);
+      }
+
+      .toast.error {
+        border-left-color: var(--error-color);
+        color: var(--error-color);
+      }
+
+      .toast.warning {
+        border-left-color: var(--warning-color);
+        color: var(--warning-color);
+      }
+
+      .toast-icon {
+        font-size: 20px;
+      }
+
+      .toast-content {
+        flex: 1;
+      }
+
+      .toast-title {
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+
+      .toast-message {
+        font-size: 14px;
+        opacity: 0.8;
+      }
+
+      .toast-close {
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+      }
+
+      .toast-close:hover {
+        opacity: 1;
+      }
+
+      @keyframes slideIn {
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+      }
+
+      /* Login Container */
+      .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .login-card {
+        background: white;
+        padding: 3rem;
+        border-radius: 24px;
+        box-shadow: var(--shadow-lg);
+        width: 100%;
+        max-width: 440px;
+        text-align: center;
+        border: 1px solid var(--border-color);
+      }
+
+      .logo {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--primary-hover)
+        );
+        border-radius: 20px;
+        margin: 0 auto 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        box-shadow: var(--shadow);
+      }
+
+      .login-title {
+        color: var(--text-dark);
+        margin-bottom: 2.5rem;
+        font-size: 2rem;
+        font-weight: 700;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+        text-align: left;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 16px;
+        transition: all 0.2s ease;
+        background: white;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+      }
+
+      .btn {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--primary-hover)
+        );
+        color: white;
+        padding: 0.875rem 2rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .btn:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-secondary {
+        background: white;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+      }
+
+      .btn-secondary:hover:not(:disabled) {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      /* Dashboard Styles */
+      .dashboard-container {
+        display: none;
+        min-height: 100vh;
+        background: var(--bg-light);
+      }
+
+      .dashboard-container.active {
+        display: block;
+      }
+
+      .navbar {
+        background: white;
+        padding: 1.5rem 2rem;
+        box-shadow: var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-dark);
+      }
+
+      .nav-brand .logo {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        margin: 0;
+      }
+
+      .nav-user {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .user-info {
+        text-align: right;
+      }
+
+      .user-email {
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+
+      .user-role {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.875rem;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+        display: inline-block;
+      }
+
+      .logout-btn {
+        background: var(--error-color);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .logout-btn:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+      }
+
+      .main-content {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .dashboard-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+      }
+
+      .dashboard-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--bg-light);
+      }
+
+      .card-icon {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--primary-hover)
+        );
+        color: white;
+        padding: 1rem;
+        border-radius: 14px;
+        font-size: 1.25rem;
+        box-shadow: var(--shadow);
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-dark);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .stat-item {
+        background: var(--bg-light);
+        padding: 1.5rem;
+        border-radius: 16px;
+        text-align: center;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+      }
+
+      .stat-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin-bottom: 8px;
+      }
+
+      .stat-label {
+        color: var(--text-light);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .voucher-form {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+        align-items: end;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-light);
+      }
+
+      .loading.active {
+        display: block;
+      }
+
+      .loading i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--primary-color);
+      }
+
+      /* QR Scanner Styles */
+      .qr-scanner {
+        max-width: 500px;
+        margin: 0 auto;
+      }
+
+      .scanner-container {
+        position: relative;
+        margin-bottom: 2rem;
+      }
+
+      #qr-video {
+        width: 100%;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .scanner-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 200px;
+        border: 3px solid var(--primary-color);
+        border-radius: 16px;
+        background: rgba(220, 38, 38, 0.1);
+      }
+
+      .scanner-overlay::before,
+      .scanner-overlay::after {
+        content: "";
+        position: absolute;
+        width: 30px;
+        height: 30px;
+      }
+
+      .scanner-overlay::before {
+        top: -3px;
+        left: -3px;
+        border-top: 3px solid var(--primary-color);
+        border-left: 3px solid var(--primary-color);
+      }
+
+      .scanner-overlay::after {
+        bottom: -3px;
+        right: -3px;
+        border-bottom: 3px solid var(--primary-color);
+        border-right: 3px solid var(--primary-color);
+      }
+
+      .scanner-controls {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+      }
+
+      .qr-input {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 2rem 0;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border-color);
+      }
+
+      .divider span {
+        padding: 0 1rem;
+        color: var(--text-light);
+        font-weight: 500;
+      }
+
+      .date-filters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .navbar {
+          padding: 1rem;
+          flex-direction: column;
+          gap: 1rem;
+          text-align: center;
+        }
+
+        .main-content {
+          padding: 1rem;
+        }
+
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+
+        .toast-container {
+          left: 20px;
+          right: 20px;
+        }
+
+        .toast {
+          min-width: unset;
+        }
+      }
+
+      /* Animation classes */
+      .fade-in {
+        animation: fadeIn 0.5s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+      <div class="login-card fade-in">
+        <div class="logo">VM</div>
+        <h2 class="login-title">Voucher Management</h2>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              required
+              placeholder="Enter your email"
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              required
+              placeholder="Enter your password"
+            />
+          </div>
+          <button type="submit" class="btn" id="loginBtn">
+            <i class="fas fa-sign-in-alt"></i> Sign In
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-container" id="dashboardScreen">
+      <nav class="navbar">
+        <div class="nav-brand">
+          <div class="logo">VM</div>
+          <span>Voucher Management</span>
+        </div>
+        <div class="nav-user">
+          <div class="user-info">
+            <div class="user-email" id="userEmail"></div>
+            <div class="user-role" id="userRole"></div>
+          </div>
+          <button class="logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </nav>
+
+      <main class="main-content">
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="role-dashboard hidden">
+          <div class="dashboard-grid">
+            <div class="dashboard-card fade-in">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-user-plus"></i>
+                </div>
+                <h3 class="card-title">Register New User</h3>
+              </div>
+
+              <form id="registerForm" class="voucher-form">
+                <div class="form-group">
+                  <label for="regEmail">Email Address</label>
+                  <input
+                    type="email"
+                    id="regEmail"
+                    required
+                    placeholder="user@company.com"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="regPassword">Password</label>
+                  <input
+                    type="password"
+                    id="regPassword"
+                    required
+                    minlength="6"
+                    placeholder="Minimum 6 characters"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="regRole">User Role</label>
+                  <select id="regRole" required>
+                    <option value="">Select a role</option>
+                    <option value="admin">Administrator</option>
+                    <option value="accountant">Accountant</option>
+                    <option value="user">Regular User</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn">
+                  <i class="fas fa-user-plus"></i> Create User
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accountant Dashboard -->
+        <div id="accountantDashboard" class="role-dashboard hidden">
+          <div class="dashboard-grid">
+            <!-- Create Vouchers -->
+            <div class="dashboard-card fade-in">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-ticket-alt"></i>
+                </div>
+                <h3 class="card-title">Generate Vouchers</h3>
+              </div>
+
+              <form id="voucherForm" class="voucher-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="numberOfVouchers">Number of Vouchers</label>
+                    <input
+                      type="number"
+                      id="numberOfVouchers"
+                      min="1"
+                      max="1000"
+                      required
+                      placeholder="Enter quantity"
+                    />
+                  </div>
+                  <button type="submit" class="btn">
+                    <i class="fas fa-plus"></i> Generate
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Download Files -->
+            <div class="dashboard-card fade-in">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-download"></i>
+                </div>
+                <h3 class="card-title">Download Files</h3>
+              </div>
+
+              <button class="btn btn-secondary" onclick="downloadLatestFile()">
+                <i class="fas fa-file-pdf"></i> Download Latest PDF
+              </button>
+            </div>
+          </div>
+
+          <!-- Reports Section -->
+          <div class="dashboard-card fade-in">
+            <div class="card-header">
+              <div class="card-icon">
+                <i class="fas fa-chart-bar"></i>
+              </div>
+              <h3 class="card-title">Analytics & Reports</h3>
+            </div>
+
+            <div class="date-filters">
+              <div class="form-group">
+                <label for="reportMonth">Month</label>
+                <select id="reportMonth">
+                  <option value="">All Months</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="reportYear">Year</label>
+                <input type="number" id="reportYear" min="2020" max="2030" />
+              </div>
+              <div class="form-group">
+                <label for="startDate">Start Date</label>
+                <input type="date" id="startDate" />
+              </div>
+              <div class="form-group">
+                <label for="endDate">End Date</label>
+                <input type="date" id="endDate" />
+              </div>
+            </div>
+
+            <button
+              class="btn"
+              onclick="loadReports()"
+              style="margin-bottom: 2rem"
+            >
+              <i class="fas fa-sync"></i> Refresh Reports
+            </button>
+
+            <div class="loading" id="reportsLoading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <div>Loading analytics...</div>
+            </div>
+
+            <div class="stats-grid" id="reportsContainer">
+              <!-- Reports will be loaded here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- User Dashboard -->
+        <div id="userDashboard" class="role-dashboard hidden">
+          <div class="dashboard-grid">
+            <div class="dashboard-card fade-in">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-qrcode"></i>
+                </div>
+                <h3 class="card-title">Redeem Voucher</h3>
+              </div>
+
+              <div class="qr-scanner">
+                <div class="scanner-controls">
+                  <button
+                    class="btn"
+                    id="startScanBtn"
+                    onclick="startQRScanner()"
+                  >
+                    <i class="fas fa-camera"></i> Start Camera
+                  </button>
+                  <button
+                    class="btn btn-secondary"
+                    id="stopScanBtn"
+                    onclick="stopQRScanner()"
+                    style="display: none"
+                  >
+                    <i class="fas fa-stop"></i> Stop Scanner
+                  </button>
+                </div>
+
+                <div
+                  class="scanner-container"
+                  id="scannerContainer"
+                  style="display: none"
+                >
+                  <video id="qr-video" playsinline></video>
+                  <div class="scanner-overlay"></div>
+                </div>
+
+                <div class="divider">
+                  <span>OR</span>
+                </div>
+
+                <div class="qr-input">
+                  <div class="form-group">
+                    <label for="voucherId">Enter Voucher ID Manually</label>
+                    <input
+                      type="text"
+                      id="voucherId"
+                      placeholder="Paste voucher ID here"
+                    />
+                  </div>
+                  <button class="btn" onclick="redeemVoucher()">
+                    <i class="fas fa-gift"></i> Redeem Voucher
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // Configuration
+      const CONFIG = {
+        API_BASE: "http://localhost:5678/api/v1",
+        MONTHS: [
+          { value: "1", name: "January" },
+          { value: "2", name: "February" },
+          { value: "3", name: "March" },
+          { value: "4", name: "April" },
+          { value: "5", name: "May" },
+          { value: "6", name: "June" },
+          { value: "7", name: "July" },
+          { value: "8", name: "August" },
+          { value: "9", name: "September" },
+          { value: "10", name: "October" },
+          { value: "11", name: "November" },
+          { value: "12", name: "December" },
+        ],
+      };
+
+      // Global state
+      let currentUser = null;
+      let authToken = null;
+      let qrScanner = null;
+
+      // Toast notification system
+      function showToast(title, message, type = "success") {
+        const toastContainer = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+
+        const icons = {
+          success: "fas fa-check-circle",
+          error: "fas fa-exclamation-circle",
+          warning: "fas fa-exclamation-triangle",
+          info: "fas fa-info-circle",
+        };
+
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+                <i class="toast-icon ${icons[type]}"></i>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="removeToast(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+        toastContainer.appendChild(toast);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+          removeToast(toast.querySelector(".toast-close"));
+        }, 5000);
+      }
+
+      function removeToast(closeBtn) {
+        const toast = closeBtn.closest(".toast");
+        toast.style.animation = "slideOut 0.3s ease-out forwards";
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      }
+
+      // API Request helper
+      async function apiRequest(endpoint, options = {}) {
+        const url = `${CONFIG.API_BASE}${endpoint}`;
+        const config = {
+          headers: {
+            "Content-Type": "application/json",
+            ...options.headers,
+          },
+          ...options,
+        };
+
+        if (authToken) {
+          config.headers.Authorization = `Bearer ${authToken}`;
+        }
+
+        try {
+          const response = await fetch(url, config);
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.message || "Request failed");
+          }
+
+          return data;
+        } catch (error) {
+          console.error("API Request failed:", error);
+          throw error;
+        }
+      }
+
+      // Initialize dynamic elements
+      function initializeDynamicElements() {
+        // Populate months dropdown
+        const monthSelect = document.getElementById("reportMonth");
+        CONFIG.MONTHS.forEach((month) => {
+          const option = document.createElement("option");
+          option.value = month.value;
+          option.textContent = month.name;
+          monthSelect.appendChild(option);
+        });
+
+        // Set current year
+        const currentYear = new Date().getFullYear();
+        document.getElementById("reportYear").value = currentYear;
+      }
+
+      // Login functionality
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const loginBtn = document.getElementById("loginBtn");
+          const originalContent = loginBtn.innerHTML;
+
+          loginBtn.disabled = true;
+          loginBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+
+          try {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            const response = await apiRequest("/auth/login", {
+              method: "POST",
+              body: JSON.stringify({ email, password }),
+            });
+
+            currentUser = response.data.user;
+            authToken = response.data.token;
+
+            showToast(
+              "Welcome!",
+              `Successfully logged in as ${currentUser.role}`,
+              "success"
+            );
+            showDashboard();
+          } catch (error) {
+            showToast("Login Failed", error.message, "error");
+          } finally {
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = originalContent;
+          }
+        });
+
+      // Show appropriate dashboard based on user role
+      function showDashboard() {
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("dashboardScreen").classList.add("active");
+
+        // Update user info
+        document.getElementById("userEmail").textContent = currentUser.email;
+        document.getElementById("userRole").textContent = currentUser.role;
+
+        // Hide all dashboards
+        document
+          .querySelectorAll(".role-dashboard")
+          .forEach((d) => d.classList.add("hidden"));
+
+        // Show appropriate dashboard
+        const dashboardMap = {
+          admin: "adminDashboard",
+          accountant: "accountantDashboard",
+          user: "userDashboard",
+        };
+
+        const dashboardId = dashboardMap[currentUser.role];
+        if (dashboardId) {
+          document.getElementById(dashboardId).classList.remove("hidden");
+
+          // Load initial data for accountant
+          if (currentUser.role === "accountant") {
+            loadReports();
+          }
+        }
+      }
+
+      // Register user (Admin only)
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          const originalContent = submitBtn.innerHTML;
+
+          submitBtn.disabled = true;
+          submitBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+          try {
+            const email = document.getElementById("regEmail").value;
+            const password = document.getElementById("regPassword").value;
+            const role = document.getElementById("regRole").value;
+
+            await apiRequest("/auth/register", {
+              method: "POST",
+              body: JSON.stringify({ email, password, role }),
+            });
+
+            showToast(
+              "Success!",
+              `User ${email} registered successfully as ${role}`,
+              "success"
+            );
+            document.getElementById("registerForm").reset();
+          } catch (error) {
+            showToast("Registration Failed", error.message, "error");
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+          }
+        });
+
+      // Create vouchers (Accountant only)
+      document
+        .getElementById("voucherForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          const originalContent = submitBtn.innerHTML;
+
+          submitBtn.disabled = true;
+          submitBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+          try {
+            const numberOfVouchers = parseInt(
+              document.getElementById("numberOfVouchers").value
+            );
+
+            if (numberOfVouchers > 1000) {
+              throw new Error("Maximum 1000 vouchers can be generated at once");
+            }
+
+            const response = await apiRequest("/voucher/create", {
+              method: "POST",
+              body: JSON.stringify({ numberOfVouchers }),
+            });
+
+            showToast(
+              "Vouchers Created!",
+              `Successfully generated ${response.data.total} vouchers`,
+              "success"
+            );
+            document.getElementById("voucherForm").reset();
+
+            // Refresh reports
+            setTimeout(() => loadReports(), 1000);
+          } catch (error) {
+            showToast("Generation Failed", error.message, "error");
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+          }
+        });
+
+      // Download latest file (Accountant only)
+      async function downloadLatestFile() {
+        try {
+          showToast(
+            "Downloading...",
+            "Preparing your file for download",
+            "info"
+          );
+
+          const response = await fetch(`${CONFIG.API_BASE}/file/latest`, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message);
+          }
+
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `vouchers_${new Date().toISOString().split("T")[0]}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+
+          showToast(
+            "Download Complete!",
+            "PDF file has been downloaded successfully",
+            "success"
+          );
+        } catch (error) {
+          showToast("Download Failed", error.message, "error");
+        }
+      }
+
+      // Load reports (Accountant only)
+      async function loadReports() {
+        const loading = document.getElementById("reportsLoading");
+        const container = document.getElementById("reportsContainer");
+
+        loading.classList.add("active");
+        container.innerHTML = "";
+
+        try {
+          // Build query parameters dynamically
+          const params = new URLSearchParams();
+
+          const month = document.getElementById("reportMonth").value;
+          const year = document.getElementById("reportYear").value;
+          const startDate = document.getElementById("startDate").value;
+          const endDate = document.getElementById("endDate").value;
+
+          if (startDate && endDate) {
+            params.append("startDate", startDate);
+            params.append("endDate", endDate);
+          } else if (month && year) {
+            params.append("month", month);
+            params.append("year", year);
+          } else if (year) {
+            params.append("year", year);
+          }
+
+          const queryString = params.toString();
+          const endpoint = `/voucher/overview${
+            queryString ? "?" + queryString : ""
+          }`;
+
+          const response = await apiRequest(endpoint);
+
+          if (response.data && response.data.length > 0) {
+            const data = response.data[0];
+
+            const statsHTML = `
+                        <div class="stat-item">
+                            <div class="stat-value">${(
+                              data.totalVouchers || 0
+                            ).toLocaleString()}</div>
+                            <div class="stat-label">Total Vouchers Redeemed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">₦${(
+                              data.amountPaidByPeople || 0
+                            ).toLocaleString()}</div>
+                            <div class="stat-label">Customer Payments</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">₦${(
+                              data.companyContribution || 0
+                            ).toLocaleString()}</div>
+                            <div class="stat-label">Company Contribution</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">₦${(
+                              data.totalVendorPayment || 0
+                            ).toLocaleString()}</div>
+                            <div class="stat-label">Total Vendor Payment</div>
+                        </div>
+                    `;
+
+            container.innerHTML = statsHTML;
+            container.classList.add("fade-in");
+          } else {
+            container.innerHTML = `
+                        <div class="stat-item" style="grid-column: 1 / -1; text-align: center;">
+                            <i class="fas fa-chart-line" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
+                            <div class="stat-label">No data available for the selected period</div>
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          container.innerHTML = `
+                    <div class="stat-item" style="grid-column: 1 / -1; text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--error-color); margin-bottom: 1rem;"></i>
+                        <div class="stat-label" style="color: var(--error-color);">Error loading reports: ${error.message}</div>
+                    </div>
+                `;
+          showToast("Report Error", "Failed to load analytics data", "error");
+        } finally {
+          loading.classList.remove("active");
+        }
+      }
+
+      // QR Scanner functionality
+      async function startQRScanner() {
+        const startBtn = document.getElementById("startScanBtn");
+        const stopBtn = document.getElementById("stopScanBtn");
+        const container = document.getElementById("scannerContainer");
+        const video = document.getElementById("qr-video");
+
+        try {
+          startBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Starting...';
+          startBtn.disabled = true;
+
+          // Initialize QR Scanner
+          qrScanner = new QrScanner(
+            video,
+            (result) => {
+              console.log("QR Code detected:", result);
+
+              // Extract voucher ID from URL or use result directly
+              let voucherId = result;
+
+              // If it's a URL, extract the ID
+              if (result.includes("/voucher/redeem/")) {
+                const urlParts = result.split("/");
+                voucherId = urlParts[urlParts.length - 1];
+              }
+
+              // Stop scanner and redeem
+              stopQRScanner();
+              document.getElementById("voucherId").value = voucherId;
+              redeemVoucher();
+            },
+            {
+              highlightScanRegion: true,
+              highlightCodeOutline: true,
+            }
+          );
+
+          await qrScanner.start();
+
+          // Update UI
+          container.style.display = "block";
+          startBtn.style.display = "none";
+          stopBtn.style.display = "inline-flex";
+
+          showToast(
+            "Camera Ready",
+            "Point your camera at a QR code to scan",
+            "info"
+          );
+        } catch (error) {
+          console.error("QR Scanner error:", error);
+          showToast(
+            "Camera Error",
+            "Could not access camera. Please check permissions.",
+            "error"
+          );
+
+          startBtn.innerHTML = '<i class="fas fa-camera"></i> Start Camera';
+          startBtn.disabled = false;
+        }
+      }
+
+      function stopQRScanner() {
+        const startBtn = document.getElementById("startScanBtn");
+        const stopBtn = document.getElementById("stopScanBtn");
+        const container = document.getElementById("scannerContainer");
+
+        if (qrScanner) {
+          qrScanner.stop();
+          qrScanner = null;
+        }
+
+        // Update UI
+        container.style.display = "none";
+        startBtn.style.display = "inline-flex";
+        stopBtn.style.display = "none";
+
+        startBtn.innerHTML = '<i class="fas fa-camera"></i> Start Camera';
+        startBtn.disabled = false;
+      }
+
+      // Redeem voucher (User only)
+      async function redeemVoucher() {
+        const voucherIdInput = document.getElementById("voucherId");
+        const voucherId = voucherIdInput.value.trim();
+
+        if (!voucherId) {
+          showToast(
+            "Missing Information",
+            "Please enter a voucher ID or scan a QR code",
+            "warning"
+          );
+          return;
+        }
+
+        try {
+          showToast("Processing...", "Redeeming your voucher", "info");
+
+          await apiRequest(`/voucher/redeem/${voucherId}`);
+
+          showToast("Success!", "Voucher redeemed successfully! 🎉", "success");
+          voucherIdInput.value = "";
+
+          // Add celebration effect
+          document.querySelector(".qr-scanner").classList.add("pulse");
+          setTimeout(() => {
+            document.querySelector(".qr-scanner").classList.remove("pulse");
+          }, 2000);
+        } catch (error) {
+          showToast("Redemption Failed", error.message, "error");
+        }
+      }
+
+      // Logout functionality
+      function logout() {
+        // Stop QR scanner if running
+        if (qrScanner) {
+          stopQRScanner();
+        }
+
+        currentUser = null;
+        authToken = null;
+
+        document.getElementById("loginScreen").style.display = "flex";
+        document.getElementById("dashboardScreen").classList.remove("active");
+
+        // Clear all forms
+        document.querySelectorAll("form").forEach((form) => form.reset());
+
+        // Clear reports
+        document.getElementById("reportsContainer").innerHTML = "";
+
+        showToast(
+          "Logged Out",
+          "You have been successfully logged out",
+          "success"
+        );
+      }
+
+      // Handle Enter key in voucher ID input
+      document
+        .getElementById("voucherId")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            redeemVoucher();
+          }
+        });
+
+      // Initialize the application
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("Voucher Management System initialized");
+        initializeDynamicElements();
+
+        // Add some welcome animation
+        document.querySelector(".login-card").classList.add("fade-in");
+      });
+
+      // Handle browser back button
+      window.addEventListener("popstate", () => {
+        if (currentUser) {
+          logout();
+        }
+      });
+
+      // Auto-focus first input on page load
+      window.addEventListener("load", () => {
+        document.getElementById("email").focus();
+      });
+    </script>
+  </body>
+</html>
