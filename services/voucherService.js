@@ -375,7 +375,7 @@ exports.createVoucher = async (req) => {
     const voucher = vouchers[i];
 
     // Use alphaCode in URL instead of _id
-    const url = `${req.protocol}://192.168.107.237:5678/api/v1/voucher/redeem/${voucher.alphaCode}`;
+    const url = `${req.protocol}://${req.host}/api/v1/voucher/redeem/${voucher.alphaCode}`;
 
     const imageName = `voucher_${voucher.alphaCode}.png`;
     const imagePath = path.join(folderPath, imageName);
