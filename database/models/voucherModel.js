@@ -20,6 +20,11 @@ const voucherSchema = new mongoose.Schema(
       enum: ["active", "redeemed", "expired"],
       default: "active",
     },
+    alphaCode: {
+      type: String,
+      required: true,
+      unique: true,
+    },
   },
   {
     timestamps: true,

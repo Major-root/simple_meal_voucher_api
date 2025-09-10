@@ -753,7 +753,7 @@
               </div>
 
               <button class="btn btn-secondary" onclick="downloadLatestFile()">
-                <i class="fas fa-file-pdf"></i> Download Latest PDF
+                <i class="fas fa-file-pdf"></i> Download Latest File
               </button>
             </div>
           </div>
@@ -873,7 +873,7 @@
     <script>
       // Configuration
       const CONFIG = {
-        API_BASE: "http://localhost:5678/api/v1",
+        API_BASE: "http://192.168.107.237:5678/api/v1",
         MONTHS: [
           { value: "1", name: "January" },
           { value: "2", name: "February" },
@@ -890,10 +890,48 @@
         ],
       };
 
-      // Global state
+      // Global state with session persistence
       let currentUser = null;
       let authToken = null;
       let qrScanner = null;
+
+      // Session management (using sessionStorage for browser session persistence)
+      function saveSession() {
+        if (currentUser && authToken) {
+          // Store in session (survives page refresh but not browser close)
+          sessionStorage.setItem("vms_user", JSON.stringify(currentUser));
+          sessionStorage.setItem("vms_token", authToken);
+        }
+      }
+
+      function loadSession() {
+        try {
+          const savedUser = sessionStorage.getItem("vms_user");
+          const savedToken = sessionStorage.getItem("vms_token");
+
+          if (savedUser && savedToken) {
+            currentUser = JSON.parse(savedUser);
+            authToken = savedToken;
+            return true;
+          }
+        } catch (error) {
+          console.error("Error loading session:", error);
+          clearSession();
+        }
+        return false;
+      }
+
+      function clearSession() {
+        currentUser = null;
+        authToken = null;
+        sessionStorage.removeItem("vms_user");
+        sessionStorage.removeItem("vms_token");
+      }
+
+      // Check if user is authenticated
+      function isAuthenticated() {
+        return currentUser && authToken;
+      }
 
       // Toast notification system
       function showToast(title, message, type = "success") {
@@ -952,14 +990,32 @@
           config.headers.Authorization = `Bearer ${authToken}`;
         }
 
+        // Debug logging
+        console.log("API Request:", {
+          url,
+          method: options.method || "GET",
+          headers: config.headers,
+          body: options.body,
+        });
+
         try {
           const response = await fetch(url, config);
+
+          // Debug response
+          console.log("API Response:", {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url,
+          });
+
           const data = await response.json();
 
           if (!response.ok) {
+            console.error("API Error:", data);
             throw new Error(data.message || "Request failed");
           }
 
+          console.log("API Success:", data);
           return data;
         } catch (error) {
           console.error("API Request failed:", error);
@@ -1008,6 +1064,15 @@
             currentUser = response.data.user;
             authToken = response.data.token;
 
+            // Save session for page refresh persistence
+            saveSession();
+
+            // Debug logging
+            console.log("Login successful:", {
+              user: currentUser,
+              token: authToken,
+            });
+
             showToast(
               "Welcome!",
               `Successfully logged in as ${currentUser.role}`,
@@ -1015,6 +1080,7 @@
             );
             showDashboard();
           } catch (error) {
+            console.error("Login error:", error);
             showToast("Login Failed", error.message, "error");
           } finally {
             loginBtn.disabled = false;
@@ -1159,7 +1225,7 @@
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `vouchers_${new Date().toISOString().split("T")[0]}.pdf`;
+          // a.download = `vouchers_${new Date().toISOString().split("T")[0]}.zip`;
           document.body.appendChild(a);
           a.click();
           window.URL.revokeObjectURL(url);
@@ -1167,7 +1233,7 @@
 
           showToast(
             "Download Complete!",
-            "PDF file has been downloaded successfully",
+            "ZIP file has been downloaded successfully",
             "success"
           );
         } catch (error) {
@@ -1383,8 +1449,8 @@
           stopQRScanner();
         }
 
-        currentUser = null;
-        authToken = null;
+        // Clear session data
+        clearSession();
 
         document.getElementById("loginScreen").style.display = "flex";
         document.getElementById("dashboardScreen").classList.remove("active");
@@ -1416,14 +1482,31 @@
         console.log("Voucher Management System initialized");
         initializeDynamicElements();
 
-        // Add some welcome animation
-        document.querySelector(".login-card").classList.add("fade-in");
+        // Check for existing session on page load
+        if (loadSession() && isAuthenticated()) {
+          console.log("Found existing session, auto-logging in");
+          showDashboard();
+        } else {
+          // Add welcome animation for login screen
+          document.querySelector(".login-card").classList.add("fade-in");
+        }
       });
 
       // Handle browser back button
       window.addEventListener("popstate", () => {
-        if (currentUser) {
+        if (isAuthenticated()) {
           logout();
+        }
+      });
+
+      // Handle browser close/refresh - optional: warn user
+      window.addEventListener("beforeunload", (e) => {
+        if (isAuthenticated()) {
+          // Session will persist on refresh, only warn on actual close
+          const message =
+            "You are currently logged in. Your session will remain active.";
+          e.returnValue = message;
+          return message;
         }
       });
 

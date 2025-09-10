@@ -16,6 +16,7 @@ exports.register = async (req) => {
 };
 
 exports.login = async (req) => {
+  console.log("Login request received");
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });

@@ -23,7 +23,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   const decoded = await promisify(jwt.verify)(token, config.jwtSecret);
-  console.log("Decoded token:", decoded);
   const userId = decoded.id;
 
   const currentUser = await User.findOne({ _id: userId });

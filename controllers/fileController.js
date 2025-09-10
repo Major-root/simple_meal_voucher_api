@@ -9,6 +9,8 @@ router.get(
   guardMiddleware.restrictTo("accountant"),
   catchAsync(async (req, res, next) => {
     const latestFile = await fileService.getUserLatestFile(req);
+    console.log("Preparing to download file: ", latestFile.fileName);
+    console.log("File path: ", latestFile.filePath);
     res.download(latestFile.filePath, latestFile.fileName, (err) => {
       if (err) {
         return next(err);

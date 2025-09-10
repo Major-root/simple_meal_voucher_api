@@ -10,6 +10,7 @@
     "start": "nodemon run server.js"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "celebrate": "^15.0.3",
