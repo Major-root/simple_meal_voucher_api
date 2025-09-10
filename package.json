@@ -7,7 +7,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon run server.js"
+    "start": "node run server.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",
